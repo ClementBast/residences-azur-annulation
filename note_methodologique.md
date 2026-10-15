@@ -1,6 +1,6 @@
 # Note méthodologique — Résidences Azur
 
-Groupe : 4  ·  Classe : ……  ·  Membres : Clément Bastien, Romain Liénard
+Groupe : 4  ·  Classe : ……  ·  Membres : Clément Bastien, Romain Liénard, Mohammed Adam Berkani
 
 ## 1. Problème et décision métier
 
