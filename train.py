@@ -10,9 +10,10 @@ Protocole (justifié dans note_methodologique.md) :
     les modèles et réglages ont été choisis sur un jeu de validation dans le
     notebook, le test n'est utilisé qu'une fois, à la fin ;
   - un seul objet sauvegardé : FunctionTransformer(ingénierie) +
-    ColumnTransformer(imputation + encodage) + LogisticRegression ;
-    la régression logistique est retenue car elle égale le boosting sur la
-    validation sans sur-apprentissage et reste interprétable ;
+    ColumnTransformer(imputation + encodage) + RandomForestClassifier ;
+    la forêt (min_samples_leaf=50, réglé sur la validation) obtient la
+    meilleure AUPRC en validation (0,604) — choix fait avant de toucher
+    au test ;
   - variables de fuite écartées : statut_dossier, date_statut,
     jours_attente_confirmation, logement_attribue, nb_modifications,
     nb_places_parking (voir audit_variables.md) ;
@@ -31,7 +32,7 @@ import pandas as pd
 import sklearn
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
@@ -77,7 +78,7 @@ def build_pipeline() -> Pipeline:
         [
             ("features", FunctionTransformer(build_features, validate=False)),
             ("preparation", prep),
-            ("modele", LogisticRegression(max_iter=1000)),
+            ("modele", RandomForestClassifier(n_estimators=200, min_samples_leaf=50, n_jobs=-1, random_state=0)),
         ]
     )
 
@@ -127,7 +128,7 @@ def main(data_path: str) -> None:
     with open("model_meta.json", "w", encoding="utf-8") as f:
         json.dump(
             {
-                "modele": "LogisticRegression",
+                "modele": "RandomForestClassifier(min_samples_leaf=50)",
                 "version_modele": "1.0",
                 "variables_exclues": {
                     "statut_dossier": "fuite : statut final, prédit la cible à 100 %",

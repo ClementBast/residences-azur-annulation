@@ -55,12 +55,11 @@ modèle), test (20 % les plus récentes, utilisé une seule fois).
 | Gradient boosting (HGB) | 0,592 | 0,778 | 0,9 s |
 | MLP (bonus, 64 neurones) | 0,581 | 0,786 | 26 s |
 
-Lecture : l'arbre illimité mémorise (train 1,00, val 0,36). La forêt réglée et
-le boosting dominent en validation, mais avec un écart train/val marqué ; la
-logistique est proche et sans sur-apprentissage. **Modèle retenu : régression
-logistique** — interprétable, robuste, et au test elle fait mieux (0,613 contre
-0,602 pour la forêt). Le MLP n'apporte rien : données tabulaires, peu
-d'interactions non linéaires exploitables, et 60× plus lent.
+Lecture : l'arbre illimité mémorise (train 1,00, val 0,36). **Modèle retenu :
+forêt aléatoire avec min_samples_leaf=50** — meilleure AUPRC en validation
+(0,604), réglage choisi sur la validation avant de toucher au test. Le MLP
+n'apporte rien : données tabulaires, peu d'interactions non linéaires
+exploitables, et 60× plus lent.
 
 ## 4. Résultats et évaluation
 
@@ -70,11 +69,12 @@ d'interactions non linéaires exploitables, et 60× plus lent.
   (22 % train / 26 % validation / 31 % test) — un split aléatoire mélangerait
   passé et futur, et ces taux différents rendent les AUPRC train/test non
   directement comparables.
-- **Scores** : AUPRC test **0,613** (baseline 0,311), AUC 0,773.
-- **Seuil** : la courbe de gain réel `y × 100/3 − 6` sur la validation donne un
-  optimum vers 0,12 ; le seuil économique théorique 0,18 reste proche du
-  plateau — on le conserve (≈ 40 % des dossiers appelés). Une courbe de
-  calibration montre que les probabilités sont bien ordonnées.
+- **Scores** : AUPRC test **0,602** (baseline 0,31), AUC 0,784 ; train 0,711
+  (écart modéré : une partie vient du taux d'annulation plus élevé du test).
+- **Seuil** : la courbe de gain réel `y × 100/3 − 6` donne un optimum vers
+  0,12 (gain ~94 k€ au test, 74 % de dossiers appelés) ; le seuil économique
+  théorique 0,18 reste proche et plus prudent (~88 k€, 57 % appelés) — on le
+  conserve par défaut, réglable dans l'application.
 - **Variables influentes** (permutation) : délai de réservation, garantie,
   historique d'annulations, canal de vente — cohérent avec l'EDA.
 

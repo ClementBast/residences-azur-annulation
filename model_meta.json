@@ -1,5 +1,5 @@
 {
-  "modele": "LogisticRegression",
+  "modele": "RandomForestClassifier(min_samples_leaf=50)",
   "version_modele": "1.0",
   "variables_exclues": {
     "statut_dossier": "fuite : statut final, prédit la cible à 100 %",
@@ -43,13 +43,13 @@
     "pandas": "3.0.2",
     "numpy": "2.4.4"
   },
-  "auprc_test": 0.6137323197443136,
-  "auc_test": 0.7740502176230589,
-  "auprc_train": 0.5821601039276542,
+  "auprc_test": 0.6016134985355409,
+  "auc_test": 0.7839362926292728,
+  "auprc_train": 0.7111664181794983,
   "taux_annulation_test": 0.3109723461195361,
   "seuil_economique": 0.18,
   "n_train": 67169,
   "n_test": 16815,
   "date_coupure": "2023-05-01",
-  "temps_train_s": 0.68
+  "temps_train_s": 1.52
 }
