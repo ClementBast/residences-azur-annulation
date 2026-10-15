@@ -33,7 +33,7 @@ from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardSc
 
 from features import FEATURES_CAT, FEATURES_NUM, build_features
 
-DATA_PATH = "../data/reservations_azur.csv"
+DATA_PATH = "data/reservations_azur.csv"
 TARGET = "annule"
 DATE_SPLIT = "date_arrivee"
 TEST_FRACTION = 0.2

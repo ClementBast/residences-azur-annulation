@@ -41,5 +41,5 @@
   "n_train": 67169,
   "n_test": 16815,
   "date_coupure": "2023-05-01",
-  "temps_train_s": 0.65
+  "temps_train_s": 0.96
 }
