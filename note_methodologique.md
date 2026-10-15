@@ -56,10 +56,14 @@ modèle), test (20 % les plus récentes, utilisé une seule fois).
 | MLP (bonus, 64 neurones) | 0,581 | 0,786 | 26 s |
 
 Lecture : l'arbre illimité mémorise (train 1,00, val 0,36). **Modèle retenu :
-forêt aléatoire avec min_samples_leaf=50** — meilleure AUPRC en validation
-(0,604), réglage choisi sur la validation avant de toucher au test. Le MLP
-n'apporte rien : données tabulaires, peu d'interactions non linéaires
-exploitables, et 60× plus lent.
+régression logistique.** La forêt fait 0,604 en validation (+0,02), mais avec
+un fort écart entraînement/validation (0,734 contre 0,604) là où la logistique
+n'en a aucun (0,589 contre 0,580). Le seuil économique suppose des probabilités
+fiables : la courbe de calibration montre que celles de la logistique le sont
+(annoncé 14 % → réel ~17 %). Et ses coefficients sont explicables à un
+responsable commercial. Le choix a été fait sur la validation, avant de toucher
+au test. Le MLP n'apporte rien : données tabulaires, peu d'interactions non
+linéaires exploitables, et 60× plus lent.
 
 ## 4. Résultats et évaluation
 
@@ -69,12 +73,15 @@ exploitables, et 60× plus lent.
   (22 % train / 26 % validation / 31 % test) — un split aléatoire mélangerait
   passé et futur, et ces taux différents rendent les AUPRC train/test non
   directement comparables.
-- **Scores** : AUPRC test **0,602** (baseline 0,31), AUC 0,784 ; train 0,711
-  (écart modéré : une partie vient du taux d'annulation plus élevé du test).
+- **Scores** : AUPRC test **0,614** (baseline 0,31), AUC 0,774 ; train 0,582 —
+  quasi aucun écart, cohérent avec la validation (0,580). Comparaison post-hoc :
+  la forêt choisie en validation fait 0,602 au test, soit en dessous de la
+  logistique — le choix sur validation était le bon.
 - **Seuil** : la courbe de gain réel `y × 100/3 − 6` donne un optimum vers
-  0,12 (gain ~94 k€ au test, 74 % de dossiers appelés) ; le seuil économique
-  théorique 0,18 reste proche et plus prudent (~88 k€, 57 % appelés) — on le
-  conserve par défaut, réglable dans l'application.
+  0,12 (~87,5 k€ au test, mais 74 % des dossiers appelés, 12 393 appels) ;
+  le seuil économique 0,18 rapporte autant (~87 k€) avec **2 000 appels de
+  moins** (10 314, rappel 86 %). Appeler tout le monde ne rapporterait que
+  ~72,5 k€. On conserve 0,18, réglable dans l'application.
 - **Variables influentes** (permutation) : délai de réservation, garantie,
   historique d'annulations, canal de vente — cohérent avec l'EDA.
 
