@@ -2,6 +2,16 @@
 
 Le pipeline sauvegardé dans model.pkl contient un FunctionTransformer qui
 référence build_features : ce fichier doit donc accompagner le modèle.
+
+Variables exclues en amont (voir audit_variables.md) :
+  - fuite d'information (inconnues à l'enregistrement de la réservation) :
+    statut_dossier, date_statut, jours_attente_confirmation,
+    logement_attribue (attribué à l'arrivée), nb_modifications (vaut 0 à
+    l'enregistrement par définition), nb_places_parking (0 % d'annulation
+    dès qu'une place est demandée : renseigné après réservation) ;
+  - sans valeur : id_reservation (identifiant), id_entreprise (94 % vide),
+    code_promo (même taux d'annulation que sans code), indice_affinite
+    (même moyenne dans les deux classes).
 """
 import pandas as pd
 
@@ -14,15 +24,12 @@ FEATURES_NUM = [
     "jour_semaine_arrivee",
     "nuits_total",
     "nb_personnes",
+    "avec_enfants",
     "tarif_nuit",
     "annulations_passees",
     "sejours_honores_passes",
-    "nb_modifications",
-    "nb_places_parking",
     "nb_demandes_speciales",
-    "indice_affinite",
     "via_agence",
-    "meme_logement",
 ]
 
 FEATURES_CAT = [
@@ -38,12 +45,7 @@ FEATURES_CAT = [
 
 
 def build_features(X: pd.DataFrame) -> pd.DataFrame:
-    """Transforme les colonnes brutes du CSV en variables exploitables.
-
-    Les variables exclues en amont (fuite d'information ou indisponibles à la
-    réservation : statut_dossier, date_statut, jours_attente_confirmation,
-    identifiants) ne sont pas utilisées ici.
-    """
+    """Transforme les colonnes brutes du CSV en variables exploitables."""
     X = X.copy()
 
     date_resa = pd.to_datetime(X["date_reservation"])
@@ -55,13 +57,15 @@ def build_features(X: pd.DataFrame) -> pd.DataFrame:
     X["jour_semaine_arrivee"] = date_arr.dt.dayofweek
 
     X["nuits_total"] = X["nuits_semaine"] + X["nuits_week_end"]
+    X["avec_enfants"] = (
+        (X["nb_enfants"].fillna(0) + X["nb_bebes"]) > 0
+    ).astype(int)
     X["nb_personnes"] = X["nb_adultes"] + X["nb_enfants"].fillna(0) + X["nb_bebes"]
 
     # Tarifs impossibles observés dans les données (-8 €, 6 372 €).
     X["tarif_nuit"] = X["tarif_nuit"].clip(0, 500)
 
     X["via_agence"] = X["id_agence"].notna().astype(int)
-    X["meme_logement"] = (X["logement_demande"] == X["logement_attribue"]).astype(int)
     X["pays_groupe"] = X["pays_client"].where(
         X["pays_client"].isin(PAYS_PRINCIPAUX), "Autre"
     )

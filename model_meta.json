@@ -1,20 +1,30 @@
 {
   "modele": "LogisticRegression",
+  "version_modele": "1.0",
+  "variables_exclues": {
+    "statut_dossier": "fuite : statut final, prédit la cible à 100 %",
+    "date_statut": "fuite : postérieure à la décision",
+    "jours_attente_confirmation": "inconnu à l'enregistrement",
+    "logement_attribue": "connu à l'arrivée seulement",
+    "nb_modifications": "vaut 0 à l'enregistrement par définition",
+    "nb_places_parking": "0 % d'annulation dès 1 place : rempli après réservation",
+    "id_reservation": "identifiant sans valeur prédictive",
+    "id_entreprise": "94 % de valeurs manquantes",
+    "code_promo": "même taux d'annulation avec ou sans code",
+    "indice_affinite": "même moyenne dans les deux classes, AUPRC inchangée"
+  },
   "features_num": [
     "delai_jours",
     "mois_arrivee",
     "jour_semaine_arrivee",
     "nuits_total",
     "nb_personnes",
+    "avec_enfants",
     "tarif_nuit",
     "annulations_passees",
     "sejours_honores_passes",
-    "nb_modifications",
-    "nb_places_parking",
     "nb_demandes_speciales",
-    "indice_affinite",
-    "via_agence",
-    "meme_logement"
+    "via_agence"
   ],
   "features_cat": [
     "site",
@@ -33,13 +43,13 @@
     "pandas": "3.0.2",
     "numpy": "2.4.4"
   },
-  "auprc_test": 0.6606319719131069,
-  "auc_test": 0.8129809564018695,
-  "auprc_train": 0.6369927886486303,
+  "auprc_test": 0.6137323197443136,
+  "auc_test": 0.7740502176230589,
+  "auprc_train": 0.5821601039276542,
   "taux_annulation_test": 0.3109723461195361,
   "seuil_economique": 0.18,
   "n_train": 67169,
   "n_test": 16815,
   "date_coupure": "2023-05-01",
-  "temps_train_s": 0.96
+  "temps_train_s": 0.68
 }

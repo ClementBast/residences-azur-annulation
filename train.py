@@ -7,10 +7,15 @@ Protocole (justifié dans note_methodologique.md) :
   - dédoublonnage des lignes identiques (hors identifiant et cible) ;
   - découpage chronologique sur la date d'arrivée : les ~20 % les plus récentes
     forment le test, car en production le modèle prédit des réservations futures ;
+    les modèles et réglages ont été choisis sur un jeu de validation dans le
+    notebook, le test n'est utilisé qu'une fois, à la fin ;
   - un seul objet sauvegardé : FunctionTransformer(ingénierie) +
     ColumnTransformer(imputation + encodage) + LogisticRegression ;
-    la régression logistique est retenue car elle égale le boosting au test
-    sans sur-apprentissage (AUPRC train ≈ test) et reste interprétable ;
+    la régression logistique est retenue car elle égale le boosting sur la
+    validation sans sur-apprentissage et reste interprétable ;
+  - variables de fuite écartées : statut_dossier, date_statut,
+    jours_attente_confirmation, logement_attribue, nb_modifications,
+    nb_places_parking (voir audit_variables.md) ;
   - métrique principale : l'AUPRC (classe minoritaire et décision de seuil) ;
   - seuil économique : un appel coûte 6 € et évite l'annulation dans 1 cas sur 3,
     une annulation évitée vaut ~100 €. On appelle si
@@ -123,6 +128,19 @@ def main(data_path: str) -> None:
         json.dump(
             {
                 "modele": "LogisticRegression",
+                "version_modele": "1.0",
+                "variables_exclues": {
+                    "statut_dossier": "fuite : statut final, prédit la cible à 100 %",
+                    "date_statut": "fuite : postérieure à la décision",
+                    "jours_attente_confirmation": "inconnu à l'enregistrement",
+                    "logement_attribue": "connu à l'arrivée seulement",
+                    "nb_modifications": "vaut 0 à l'enregistrement par définition",
+                    "nb_places_parking": "0 % d'annulation dès 1 place : rempli après réservation",
+                    "id_reservation": "identifiant sans valeur prédictive",
+                    "id_entreprise": "94 % de valeurs manquantes",
+                    "code_promo": "même taux d'annulation avec ou sans code",
+                    "indice_affinite": "même moyenne dans les deux classes, AUPRC inchangée",
+                },
                 "features_num": FEATURES_NUM,
                 "features_cat": FEATURES_CAT,
                 "cible": TARGET,

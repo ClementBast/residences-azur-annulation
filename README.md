@@ -1,24 +1,38 @@
-# Squelette de projet
+# Résidences Azur — prédiction d'annulation
 
-Fichiers du dossier :
+Projet de groupe (IA / Machine Learning, IPSSI). Modèle qui estime, à
+l'enregistrement d'une réservation, la **probabilité d'annulation**, avec une
+application Gradio et une API FastAPI pour décider quels dossiers appeler.
+
+## Installation
+
+Python **3.11** recommandé.
+
+```bash
+pip install -r requirements.txt
+```
+
+## Utilisation
+
+```bash
+python train.py      # ré-entraîne le pipeline depuis data/reservations_azur.csv
+                     # et écrit model.pkl + model_meta.json
+python app.py        # interface Gradio sur http://localhost:7860
+uvicorn api:api      # API FastAPI sur http://localhost:8000 (docs : /docs)
+pytest               # 11 tests : app + API (valide → 200, invalide → 422)
+jupyter notebook     # notebook.ipynb : démarche complète, exécuté
+```
+
+## Fichiers
 
 | Fichier | Rôle |
 |---|---|
-| `cahier_des_charges.md` | cahier des charges du projet |
-| `train.py` | **à écrire** : construire le pipeline final (préparation + modèle), l'évaluer et le sauvegarder dans `model.pkl` |
-| `app.py` | application Gradio : **à implémenter par le groupe** (spécification en tête du fichier) |
-| `api.py` | API FastAPI : **à implémenter par le groupe** (spécification en tête du fichier) |
-| `test_app.py` | tests `pytest` : **à implémenter par le groupe** |
-| `requirements.txt` | dépendances aux versions figées (à garder à jour) |
-| `note_methodologique.md` | modèle de la note de 2 à 3 pages |
-
-Le jeu de données du projet est `reservations_azur.csv`, dans le dossier `data/` à côté de ce dossier (chemin `../data/reservations_azur.csv`, valeur par défaut de `train.py`).
-
-Pour l'application et l'API, appuyez-vous sur le TD 3 (`partie_3/17_td_deploiement`), le notebook `16_deploiement_modele` (partie 4) et les slides de déploiement.
-
-## Pour votre projet
-
-1. Écrire `train.py` : variables retenues, variables dérivées dans le pipeline, modèle final choisi dans le notebook (voir l'échelle de méthodes du cahier des charges).
-2. Écrire `app.py` (Gradio), `api.py` (FastAPI) et `test_app.py`.
-3. Vérifier dans un terminal neuf que `python app.py`, `uvicorn api:api` et `pytest` fonctionnent depuis le dossier rendu (avec `features.py` si vos variables dérivées sont des fonctions à vous).
-4. Déposer l'archive `groupeN_CLASSE.zip` sur Teams avant 15h30 (liste des livrables : section 5 du cahier des charges).
+| `features.py` | variables dérivées partagées par train/app/api (indispensable : `model.pkl` y fait référence) |
+| `train.py` | entraîne et sauvegarde le pipeline entier |
+| `app.py` / `api.py` | application Gradio / API FastAPI |
+| `test_app.py` | tests pytest |
+| `notebook.ipynb` | EDA, audit des fuites, échelle de méthodes, évaluation |
+| `audit_variables.md` | une ligne par variable : disponible ? conservée ? pourquoi |
+| `note_methodologique.md` | note de 2–3 pages |
+| `soutenance.pptx` | support de soutenance (7 slides) |
+| `data/` | jeu de données (nécessaire pour `train.py` et le notebook) |

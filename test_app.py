@@ -1,21 +1,25 @@
 """Tests pytest : lancement avec `pytest` depuis ce dossier.
 
-- un test de l'application : la fonction de prédiction renvoie une probabilité
-  entre 0 et 1 et refuse une entrée incohérente ;
-- un test de l'API : une réservation valide renvoie 200 et une probabilité ;
-- un test de l'API : une réservation invalide renvoie 422 (avant le modèle).
+Application :
+- la prédiction renvoie une probabilité entre 0 et 1 ;
+- une entrée incohérente est refusée avec un message clair.
+
+API :
+- réservation valide → 200 et une probabilité ;
+- réservation le jour même → 200 (acceptée) ;
+- schéma invalide → 422 ; date impossible → 422 ; 0 nuit → 422 ;
+  champ manquant → 422 ; arrivée avant réservation → 422.
 """
 from fastapi.testclient import TestClient
 
 import app
 from api import api
 
-RESERVATION_VALIDES = {
+RESERVATION_VALIDE = {
     "site": "Urbaine",
     "date_reservation": "2023-01-15",
     "date_arrivee": "2023-06-01",
-    "nuits_semaine": 3,
-    "nuits_week_end": 1,
+    "nuits": 4,
     "nb_adultes": 2,
     "garantie": "Aucune",
     "canal_vente": "Intermédiaire",
@@ -25,7 +29,7 @@ RESERVATION_VALIDES = {
 }
 
 ARGS_APP = (
-    "Urbaine", "2023-01-15", "2023-06-01", 3, 1, 2,
+    "Urbaine", "2023-01-15", "2023-06-01", 4, 2,
     "Aucune", "Intermédiaire", 0, 0, 110,
 )
 
@@ -43,17 +47,72 @@ def test_app_entree_invalide():
     assert "invalide" in sortie.lower()
 
 
+def test_app_date_impossible():
+    # 30 février n'existe pas : refusé, pas de plantage.
+    sortie, _ = app.predire(
+        0.18, "Urbaine", "2023-02-30", "2023-06-01", *ARGS_APP[3:]
+    )
+    assert "invalide" in sortie.lower()
+
+
+def test_app_champ_vide():
+    sortie, _ = app.predire(
+        0.18, "Urbaine", "2023-01-15", "2023-06-01", None, 2,
+        "Aucune", "Intermédiaire", 0, 0, 110,
+    )
+    assert "invalide" in sortie.lower()
+
+
 def test_api_predict_valide():
     client = TestClient(api)
-    r = client.post("/predict", json=RESERVATION_VALIDES)
+    r = client.post("/predict", json=RESERVATION_VALIDE)
     assert r.status_code == 200
     corps = r.json()
     assert 0.0 <= corps["probabilite_annulation"] <= 1.0
     assert isinstance(corps["appeler"], bool)
+    assert corps["version_modele"]
 
 
-def test_api_predict_invalide_422():
+def test_api_jour_meme_accepte():
     client = TestClient(api)
-    invalide = dict(RESERVATION_VALIDES, nb_adultes=-3, garantie="???")
+    meme_jour = dict(RESERVATION_VALIDE, date_arrivee="2023-01-15")
+    r = client.post("/predict", json=meme_jour)
+    assert r.status_code == 200
+
+
+def test_api_date_impossible_422():
+    client = TestClient(api)
+    invalide = dict(RESERVATION_VALIDE, date_arrivee="2023-02-30")
+    r = client.post("/predict", json=invalide)
+    assert r.status_code == 422
+
+
+def test_api_zero_nuit_422():
+    client = TestClient(api)
+    invalide = dict(RESERVATION_VALIDE, nuits=0)
+    r = client.post("/predict", json=invalide)
+    assert r.status_code == 422
+
+
+def test_api_champ_manquant_422():
+    client = TestClient(api)
+    incomplet = {k: v for k, v in RESERVATION_VALIDE.items() if k != "garantie"}
+    r = client.post("/predict", json=incomplet)
+    assert r.status_code == 422
+
+
+def test_api_arrivee_avant_resa_422():
+    client = TestClient(api)
+    invalide = dict(
+        RESERVATION_VALIDE,
+        date_reservation="2023-06-01", date_arrivee="2023-01-15",
+    )
+    r = client.post("/predict", json=invalide)
+    assert r.status_code == 422
+
+
+def test_api_schema_invalide_422():
+    client = TestClient(api)
+    invalide = dict(RESERVATION_VALIDE, nb_adultes=-3, garantie="???")
     r = client.post("/predict", json=invalide)
     assert r.status_code == 422
