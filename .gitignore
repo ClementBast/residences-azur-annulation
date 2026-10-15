@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 .venv/
+make_notebook.py
+make_soutenance_pdf.py
