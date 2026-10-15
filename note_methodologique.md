@@ -1,6 +1,6 @@
 # Note méthodologique — Résidences Azur
 
-Groupe : 4  ·  Classe : SQY  ·  Membres : Clément Bastien, Romain Liénard, Mohammed Adam Berkani
+Groupe : 4  ·  Classe : SQY  ·  Membres : Clément Bastien, Mohammed Adam Berkani, Romain Lefevre
 
 ## 1. Problème et décision métier
 
