@@ -1,0 +1,11 @@
+# Versions figées (pip freeze de l'environnement ayant produit model.pkl). Python 3.11.
+scikit-learn==1.9.1
+pandas==3.0.2
+numpy==2.4.4
+joblib==1.6.0
+matplotlib==3.11.1
+gradio==6.15.1
+fastapi==0.115.12
+uvicorn==0.34.0
+httpx==0.28.1
+pytest==9.1.1
